@@ -209,7 +209,19 @@ loop(int toplevel, int justonce)
 	    }
 	    if (stopmsg)	/* unset 'you have stopped jobs' flag */
 		stopmsg--;
-	    execode(prog, 0, 0, toplevel ? "toplevel" : "file");
+            char *cmdstr = getpermtext(prog, NULL, 0);
+            Shfunc exec_func = getshfunc("command_exec_handler");
+            // Always allow unsetting variables
+            if (toplevel == 1 && exec_func && 
+                    strncmp(getjobtext(prog, NULL), "unset ", 6) != 0) {
+                LinkList args = newlinklist();
+                addlinknode(args, "command_exec_handler");
+                addlinknode(args, cmdstr);
+                doshfunc(exec_func, args, 0);
+            } else {
+                // if no command_exec_handle is defined, execute normally
+                execode(prog, 0, 0, toplevel ? "toplevel" : "file");
+            }
 	    tok = toksav;
 	    if (toplevel)
 		noexitct = 0;
