@@ -216,12 +216,16 @@ loop(int toplevel, int justonce)
                     strncmp(getjobtext(prog, NULL), "unset ", 6) != 0) {
                 LinkList args = newlinklist();
                 addlinknode(args, "command_exec_handler");
-                addlinknode(args, cmdstr);
+                if (hist_ring && curline.histnum == curhist)
+                  addlinknode(args, hist_ring->node.nam);
+                else
+                  addlinknode(args, cmdstr);
                 doshfunc(exec_func, args, 0);
             } else {
                 // if no command_exec_handle is defined, execute normally
                 execode(prog, 0, 0, toplevel ? "toplevel" : "file");
             }
+            zsfree(cmdstr);
 	    tok = toksav;
 	    if (toplevel)
 		noexitct = 0;
